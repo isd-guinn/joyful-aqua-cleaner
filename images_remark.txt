@@ -1,0 +1,30 @@
+# TEMPORARY USE ONLY
+# this is for personal remark of different images built during the testing stage
+
+General format of naming images = <hub_user>/ros2:<tag-MMDD-purpose>
+
+General naming of tag:
+<base> = "base" core image
+<built> = base core image that already "colcon-built"
+<basemod> = modified base image for testing
+<builtmod> = modified colcon-built image for testing
+
+----------------------------------------------
+[RUNDOWN]
+- Build the "base core image" (without colcon build the ros2_ws)
+- Run the core image
+- Colcon build the core image (colcon build --symlink-install)
+    - maximum time needed: 10 min (on Win11)
+- Save the container as the "colcon-built core image"
+- Run the colcon-built core image
+- Test
+
+After testing, integrate the changes into base core image 
+and go through the rundown again.
+
+-----------------------------------------------
+[TESTING REMARKS]
+for mounting the imu:
+https://docs.docker.com/engine/storage/bind-mounts/
+
+for others:

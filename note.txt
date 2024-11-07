@@ -1,0 +1,63 @@
+# for documenting the CLI commands for testing & debug
+FROM <BaseImage>
+
+# cd /usr/include
+# sudo ln -sf eigen3/Eigen Eigen
+# sudo ln -sf eigen3/unsupported unsupported
+
+cd /ros2_ws
+source /ros2_ws/install/setup.bash
+colcon build --packages-select serial_imu
+colcon build --packages-select uart_slave
+colcon build --packages-select imu_process 
+colcon build --packages-select nav_algo
+
+## to launch:
+## ros2 launch serial_imu imu_spec_msg.launch.py
+## ros2 launch uart_slave uart_slave.launch.py
+## ros2 launch imu_process imu_processor.launch.py
+## ros2 launch nav_algo nav_algo.launch.py
+
+chmod +x /ros2_ws/install/nav_algo/lib/nav_algo/nav_algo_node.py 
+
+# to update the start-up code
+- upload the latest code to docker image & update the docker image
+- update docker-compose.yml
+
+imu data need ard 500ms*5 to 500ms*6 to refresh to the right value
+when at rest, 
+fluctuate +-0.01x for linear acc,
++-0.001 for angular velocity
++-0.0002 for orientation 
+
+# may need a step to clear the src folder in the base image
+# WORKDIR /ros2_ws
+# COPY /src /ros2_ws/src
+
+to use GPIO pin instead ("/dev/ttyAMA0"), 
+sudo nano /boot/config.txt
+sudo nano /boot/cmdline.txt
+go to raspi-config and enable serial port -> reboot 
+now config.txt should have dtparam=uart0=on
+and ttyAMA0 should show up in /dev
+-----------------------------------
+To check ip: `hostname -I` (shd be the 10.89.xxx.xxx one)
+To access RasPi5 via SSH:
+At RasPi: `sudo service ssh start`
+At Host: `ssh guinn@<ip_address>
+-----------------------------------
+Path for RasPi5 devices:
+IMU = /dev/ttyUSB0
+UART =  (GPIO) /dev/ttyAMA0
+        (onboard) /dev/ttyAMA10 or /dev/serial0
+CONTROLLER = /dev/ttyACM0 or /dev/ttyACM1
+-----------------------------------
+sudo systemctl start(or stop) ros2_docker.service
+sudo systemctl status ros2_docker.service
+-----------------------------------
+current:
+[] kalman filters?? (ros2) robot_localization
+
+optional:
+# can use `udevadm info --attribute-walk --name=/dev/ttyUSB0` to check detail info
+[] plot graph

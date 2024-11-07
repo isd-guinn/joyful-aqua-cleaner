@@ -1,0 +1,15 @@
+[Unit]
+Description=Start ROS 2 Docker Compose for all the nodes
+After=network-online.target
+
+[Service]
+Type=simple
+User=guinn
+WorkingDirectory=/home/guinn/guinn-ROS2
+ExecStart=/bin/bash -c 'docker compose up'
+Restart=on-failure
+RestartSec=10s
+TimeoutStartSec=0
+
+[Install]
+WantedBy=default.target

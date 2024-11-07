@@ -1,0 +1,20 @@
+M2A:
+bool        reach_distance  // true if the robot has walked 30cm
+uint8_t     FOC_L           // left FOC value
+uint8_t     FOC_R           // right FOC value
+bool        is_moving       // true if the robot is moving
+
+A2M:
+uint8_t     action          // 0: stop, 1: forward, 2: backward (shd not exist), 3: anticlockwise, 4: clockwise
+
+
+translate to M2S:
+
+#define BYTE_POS_M2S_DIRECTION      32
+typedef uint8_t direction_t;
+#define STOP              0x00
+#define FORWARD           0x01
+#define BACKWARD          0x02
+#define ANTI_CLOCKWISE    0x03
+#define CLOCKWISE         0x04
+

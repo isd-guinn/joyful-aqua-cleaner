@@ -1,0 +1,121 @@
+# A ROS2 network with multiple nodes
+services:
+  serial_imu:
+    image: hinpak/ros2:built-1104-debug
+    container_name: serial_imu_container
+    privileged: true
+    volumes:
+      - /tmp/.X11-unix:/tmp/.X11-unix:rw
+      - /dev:/dev:rw
+      - /sys:/sys:rw
+    environment:
+      - DISPLAY=unix:1
+      - ROS_LOCALHOST_ONLY=0
+      - ROS_DOMAIN_ID=42
+    networks:
+      - ros2_network
+    command: > 
+      bash -c "
+      source /ros2_ws/install/setup.bash && 
+      colcon build --packages-select serial_imu &&
+      colcon build --packages-select uart_slave &&
+      ros2 launch serial_imu imu_spec_msg.launch.py
+      "
+
+  uart_slave:
+    image: hinpak/ros2:built-1104-debug
+    container_name: uart_slave_container
+    privileged: true
+    volumes:
+      - /tmp/.X11-unix:/tmp/.X11-unix:rw
+      - /dev:/dev:rw
+      - /sys:/sys:rw
+    environment:
+      - DISPLAY=unix:1
+      - ROS_LOCALHOST_ONLY=0
+      - ROS_DOMAIN_ID=42
+    networks:
+      - ros2_network
+    depends_on:
+      - serial_imu
+    command: > 
+      bash -c "
+      source /ros2_ws/install/setup.bash && 
+      colcon build --packages-select serial_imu &&
+      colcon build --packages-select uart_slave &&
+      ros2 launch uart_slave uart_slave.launch.py
+      "
+  imu_process:
+    image: hinpak/ros2:built-1104-debug
+    container_name: imu_process_container
+    privileged: true
+    volumes:
+      - /tmp/.X11-unix:/tmp/.X11-unix:rw
+      - /dev:/dev:rw
+      - /sys:/sys:rw
+    environment:
+      - DISPLAY=unix:1
+      - ROS_LOCALHOST_ONLY=0
+      - ROS_DOMAIN_ID=42
+    networks:
+      - ros2_network
+    depends_on:
+      - serial_imu
+    command: > 
+      bash -c "
+      source /ros2_ws/install/setup.bash && 
+      colcon build --packages-select serial_imu &&
+      colcon build --packages-select uart_slave &&
+      colcon build --packages-select imu_process &&
+      ros2 launch imu_process imu_processor.launch.py
+      "
+  nav_algo:
+    image: hinpak/ros2:built-1104-debug
+    container_name: nav_algo_container
+    privileged: true
+    volumes:
+      - /tmp/.X11-unix:/tmp/.X11-unix:rw
+      - /dev:/dev:rw
+      - /sys:/sys:rw
+    environment:
+      - DISPLAY=unix:1
+      - ROS_LOCALHOST_ONLY=0
+      - ROS_DOMAIN_ID=42
+    networks:
+      - ros2_network
+    depends_on:
+      - serial_imu
+      - imu_process
+      - uart_slave
+    command: > 
+      bash -c "
+      source /ros2_ws/install/setup.bash && 
+      colcon build --packages-select serial_imu &&
+      colcon build --packages-select uart_slave &&
+      colcon build --packages-select imu_process &&
+      colcon build --packages-select nav_algo &&
+      ros2 launch nav_algo nav_algo.launch.py
+      "
+  # debugger:
+  #   image: hinpak/ros2:built-1104-debug
+  #   container_name: debugger_container
+  #   privileged: true
+  #   volumes:
+  #     - /tmp/.X11-unix:/tmp/.X11-unix:rw
+  #     - /dev:/dev:rw
+  #     - /sys:/sys:rw
+  #   environment:
+  #     - DISPLAY=unix:1
+  #     - ROS_LOCALHOST_ONLY=0
+  #     - ROS_DOMAIN_ID=42
+  #   networks:
+  #     - ros2_network
+  #   command: > 
+  #     bash -c "
+  #     source /ros2_ws/install/setup.bash &&
+  #     rqt_graph
+  #     "
+
+networks:
+  ros2_network:
+    driver: bridge
